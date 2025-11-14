@@ -10,15 +10,17 @@ RUN apt-get update \
   && pip3 install yt-dlp \
   && rm -rf /var/lib/apt/lists/*
 
-# Copy app and install Node deps
-COPY package.json package-lock.json* ./
-RUN npm ci --production
+# Copy package manifest(s) and install node deps (no lockfile required)
+COPY package.json ./
+RUN npm install --omit=dev --no-audit --no-fund
 
+# Copy app files
 COPY . .
 
 # Ensure downloads dir exists and is writable
 RUN mkdir -p /app/downloads && chown -R node:node /app/downloads
 
+# Run as non-root for safety
 USER node
 ENV PORT=3000
 EXPOSE 3000
